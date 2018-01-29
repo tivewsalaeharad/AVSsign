@@ -1,8 +1,12 @@
 package com.hand.avssign.activity;
 
+import android.Manifest;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.os.Environment;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -11,8 +15,11 @@ import android.widget.Toast;
 
 import com.hand.avssign.R;
 import com.hand.avssign.api.ApiFactory;
+import com.hand.avssign.api.ApiService;
 import com.hand.avssign.api.ErrorUtils;
+import com.hand.avssign.api.ServiceGenerator;
 import com.hand.avssign.model.AccessToken;
+import com.hand.avssign.model.SignatureItself;
 
 import java.io.File;
 
@@ -37,8 +44,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public static final int CODE_SIGN = 1;
     public static final int CODE_TEXT = 2;
     public static final int CODE_SETTINGS = 3;
-    public static final String SIGNATURE_PATH = "signature.png";
-    public static final String SIGNATURE2_PATH = "signature2.png";
+
+    private static final int READ_STORAGE_REQUEST = 3124;
+    public static final String PICTURES = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString();
+    public static final String IMAGE_DIR = PICTURES + "/Signatures";
+    public static final String SIGNATURE_PATH = "signature.jpg";
+    public static final String SIGNATURE2_PATH = "signature2.jpg";
+
     public static final String ROOT_URL = "http://app.avs.com.ru/psa/";
     public static final String TOKEN_REQUEST_CODE = "202cb962ac59075b964b07152d234b70";
     public static final int PARAMETER_DEPARTMENT = 5;
@@ -62,6 +74,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
         loadPreferences();
         getToken();
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, READ_STORAGE_REQUEST);
     }
 
     @Override
@@ -84,6 +97,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
         }
     }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        /**
+         *  You can handle request permission result of READ_EXTERNAL_STORAGE if needed
+         *  @param READ_STORAGE_REQUEST its request code at top of this class
+         */
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -156,26 +179,36 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void sendSignatures(){
         RequestBody description = RequestBody.create(okhttp3.MultipartBody.FORM, getString(R.string.str_file_description));
-
-        File file2 = getFileStreamPath(SIGNATURE2_PATH);
-        RequestBody requestFile2 = RequestBody.create(MediaType.parse("image/png"), file2);
+        File parentDir = new File(IMAGE_DIR);
+        if (parentDir.exists() && parentDir.isDirectory()) Log.d("myLogs", "Exist and directory");
+        else return;
+        File file2 = new File(parentDir, SIGNATURE2_PATH);
+        if (!file2.exists()) {
+            Log.d("myLogs", SIGNATURE2_PATH +" not exist");
+            return;
+        }
+        File file = new File(parentDir, SIGNATURE_PATH);
+        if (!file.exists()) {
+            Log.d("myLogs", SIGNATURE_PATH + " not exist");
+            return;
+        }
+        RequestBody requestFile2 = RequestBody.create(MediaType.parse("image/jpeg"), file2);
         MultipartBody.Part body2 = MultipartBody.Part.createFormData("sign1", file2.getName(), requestFile2);
 
-        File file = getFileStreamPath(SIGNATURE_PATH);
-        RequestBody requestFile = RequestBody.create(MediaType.parse("image/png"), file);
+        RequestBody requestFile = RequestBody.create(MediaType.parse("image/jpeg"), file);
         MultipartBody.Part body = MultipartBody.Part.createFormData("sign2", file.getName(), requestFile);
 
-        Call<String> call = ApiFactory.getService().sendSignature(token, PARAMETER_ID, description, body2, body);
+        Call<SignatureItself> call = ApiFactory.getService().sendSignature(token, PARAMETER_ID, description, body2, body);
         Log.d("myLogs", call.request().toString());
-        call.enqueue(new Callback<String>() {
+        call.enqueue(new Callback<SignatureItself>() {
             @Override
-            public void onResponse(Call<String> call, Response<String> response) {
-                if (response.isSuccessful()) Log.d("myLogs", "Да " + response.body());
+            public void onResponse(Call<SignatureItself> call, Response<SignatureItself> response) {
+                if (response.isSuccessful()) Log.d("myLogs", "Результат запроса " + response.body().getResult());
                 else Toast.makeText(MainActivity.this, ErrorUtils.errorMessage(response), Toast.LENGTH_LONG).show();
             }
 
             @Override
-            public void onFailure(Call<String> call, Throwable t) {
+            public void onFailure(Call<SignatureItself> call, Throwable t) {
                 Toast.makeText(MainActivity.this, t.toString(), Toast.LENGTH_LONG).show();
             }
         });

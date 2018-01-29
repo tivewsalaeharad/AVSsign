@@ -7,11 +7,14 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
 import com.hand.avssign.activity.MainActivity;
+import com.hand.avssign.utils.FileUtils;
 
+import java.io.File;
 import java.io.FileOutputStream;
 
 public class SignatureView extends View {
@@ -40,9 +43,18 @@ public class SignatureView extends View {
         if(bitmap == null) bitmap =  Bitmap.createBitmap (getWidth(), getHeight(), Bitmap.Config.RGB_565);
         Canvas canvas = new Canvas(bitmap);
         draw(canvas);
+
+        if (!FileUtils.externalStorageAvailable()) {
+            Log.d("myLogs", FileUtils.strSDCardUnavailable());
+            return;
+        }
+        File parentDir = new File(MainActivity.IMAGE_DIR);
+        parentDir.mkdirs();
+        File signatureFile = new File(parentDir, path);
+
         try
         {
-            FileOutputStream fos = getContext().openFileOutput(path, Context.MODE_PRIVATE);
+            FileOutputStream fos = new FileOutputStream(signatureFile);
             bitmap.compress(Bitmap.CompressFormat.PNG, 90, fos);
             fos.flush();
             fos.close();

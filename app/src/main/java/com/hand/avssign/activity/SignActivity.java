@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
@@ -94,7 +95,14 @@ public class SignActivity extends AppCompatActivity implements View.OnClickListe
 
     private void load() {
         try {
-            File file = getFileStreamPath(MainActivity.SIGNATURE_PATH);
+            File parentDir = new File(MainActivity.IMAGE_DIR);
+            if (parentDir.exists() && parentDir.isDirectory()) Log.d("myLogs", "Exist and directory");
+            else return;
+            File file = new File(parentDir, MainActivity.SIGNATURE_PATH);
+            if (!file.exists()) {
+                Log.d("myLogs", MainActivity.SIGNATURE_PATH +" not exist");
+                return;
+            }
             Bitmap bitmap = BitmapFactory.decodeStream(new FileInputStream(file));
             signature.getLayoutParams().width = bitmap.getWidth() / 4;
             signature.getLayoutParams().height = bitmap.getHeight() / 4;
@@ -106,7 +114,14 @@ public class SignActivity extends AppCompatActivity implements View.OnClickListe
 
     private void load2() {
         try {
-            File file = getFileStreamPath(MainActivity.SIGNATURE2_PATH);
+            File parentDir = new File(MainActivity.IMAGE_DIR);
+            if (parentDir.exists() && parentDir.isDirectory()) Log.d("myLogs", "Exist and directory");
+            else return;
+            File file = new File(parentDir, MainActivity.SIGNATURE2_PATH);
+            if (!file.exists()) {
+                Log.d("myLogs", MainActivity.SIGNATURE2_PATH +" not exist");
+                return;
+            }
             Bitmap bitmap = BitmapFactory.decodeStream(new FileInputStream(file));
             signature2.getLayoutParams().width = bitmap.getWidth() / 4;
             signature2.getLayoutParams().height = bitmap.getHeight() / 4;

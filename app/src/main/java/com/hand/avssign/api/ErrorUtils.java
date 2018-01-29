@@ -14,7 +14,7 @@ import retrofit2.Response;
 
 public class ErrorUtils {
 
-    private static final String ERROR_MESSAGE = "Код HTTP: %d\n Ошибка: %s\n Код ошибки: %d";
+    private static final String ERROR_MESSAGE = "Код HTTP: %d\nОшибка: %s\nКод ошибки: %d";
 
     public static APIError parseError(Response<?> response) {
         Converter<ResponseBody, APIError> converter =
@@ -35,7 +35,7 @@ public class ErrorUtils {
             APIError error = parseError(response);
             return String.format(Locale.getDefault(), ERROR_MESSAGE, response.code(), error.message(), error.status());
         } catch (com.google.gson.JsonSyntaxException e) {
-            return String.format(Locale.getDefault(), ERROR_MESSAGE, response.code(), response.errorBody().toString(), 0);
+            return String.format(Locale.getDefault(), ERROR_MESSAGE, response.code(), "NULL", 0);
         }
     }
 }

@@ -2,6 +2,7 @@ package com.hand.avssign.api;
 
 import com.hand.avssign.model.AccessToken;
 import com.hand.avssign.model.DocumentForSignature;
+import com.hand.avssign.model.SignatureItself;
 
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
@@ -27,9 +28,8 @@ public interface ApiService {
             @Query("department") int department);
 
     @Multipart
-    @Headers({"content-type: multipart/form-data", "cache-control: no-cache"})
     @POST("signature/{id}")
-    Call<String> sendSignature(
+    Call<SignatureItself> sendSignature(
             @Header("Authorization") String authorization,
             @Path("id") String id,
             @Part("descrtipion") RequestBody description,
