@@ -1,0 +1,40 @@
+<resources>
+    <!--Название приложения-->
+    <string name="app_name">AVSsign</string>
+
+    <!--Подписи стартовых кнопок-->
+    <string name="str_sign">Подписать\nПСА</string>
+    <string name="str_text">Текст</string>
+    <string name="str_settings">Настройки</string>
+
+    <!--Подписи системных кнопок-->
+    <string name="str_ok">OK</string>
+    <string name="str_cancel">Отмена</string>
+    <string name="str_reset">Сброс</string>
+
+    <!--Подписи полей настройки-->
+    <string name="str_api_url">API URL</string>
+    <string name="str_subunit_code">Код подразделения</string>
+    <string name="str_secret_key">Секретный ключ</string>
+
+    <!--Диалоговые предложения-->
+    <string name="str_choose_signature_color">Выберите цвет подписи</string>
+    <string name="str_choose_signature_thickness">Выберите толщину подписи</string>
+    <string name="str_input_text">Введите текст</string>
+
+    <!--Подписи данных, получаемых из запроса-->
+    <string name="str_kind">Вид</string>
+    <string name="str_brutto">Брутто</string>
+    <string name="str_package">Тара</string>
+    <string name="str_obstruction">Засор</string>
+    <string name="str_netto">Нетто</string>
+    <string name="str_price">Цена</string>
+    <string name="str_sum">Сумма</string>
+
+    <!--Формат заявления-->
+    <string name="str_petition">Заявление</string>
+    <string name="str_petition_format">Я, %s, %d %d, %s, %s, %s, %s</string>
+
+    <!--Описания файлов-->
+    <string name="str_file_description">Отправляем подписи на сервер</string>
+</resources>

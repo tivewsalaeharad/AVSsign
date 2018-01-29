@@ -1,0 +1,183 @@
+package com.hand.avssign.activity;
+
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.Toast;
+
+import com.hand.avssign.R;
+import com.hand.avssign.api.ApiFactory;
+import com.hand.avssign.api.ErrorUtils;
+import com.hand.avssign.model.AccessToken;
+
+import java.io.File;
+
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+
+    public static final String KEY_COLOR = "Color";
+    public static final String KEY_COLOR_INDEX = "ColorIndex";
+    public static final String KEY_THICKNESS = "Thickness";
+    public static final String KEY_THICKNESS_INDEX = "ThicknessIndex";
+    public static final String KEY_API_URL = "Api URL";
+    public static final String KEY_DEPARTMENT = "Department";
+    public static final String KEY_SECRET_CODE = "Secret code";
+    public static final String KEY_TEXT = "Text";
+    public static final String KEY_FILE = "File";
+    public static final int CODE_SIGN = 1;
+    public static final int CODE_TEXT = 2;
+    public static final int CODE_SETTINGS = 3;
+    public static final String SIGNATURE_PATH = "signature.png";
+    public static final String SIGNATURE2_PATH = "signature2.png";
+    public static final String ROOT_URL = "http://app.avs.com.ru/psa/";
+    public static final String TOKEN_REQUEST_CODE = "202cb962ac59075b964b07152d234b70";
+    public static final int PARAMETER_DEPARTMENT = 5;
+    public static final String PARAMETER_ID = "45";
+
+    public static Integer selectedColor;
+    public static int selectedColorIndex;
+    public static Integer selectedThickness;
+    public static int selectedThicknessIndex;
+    public static String api_url;
+    public static int department;
+    public static String secret_code;
+    public static String petitionText;
+    public static String token;
+
+    private SharedPreferences sp;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        loadPreferences();
+        getToken();
+    }
+
+    @Override
+    public void onClick(View view) {
+        Intent intent;
+        switch (view.getId()) {
+            case R.id.btn_sign:
+                intent = new Intent(this, SignUniqueActivity.class);
+				//Для открытия экрана с отдельным введением подписей вместо предыдущей строки написать:
+				//intent = new Intent(this, SignActivity.class);
+                startActivityForResult(intent, CODE_SIGN);
+                break;
+            case R.id.btn_text:
+                intent = new Intent(this, TextActivity.class);
+                startActivityForResult(intent, CODE_TEXT);
+                break;
+            case R.id.btn_settings:
+                intent = new Intent(this, SettingsActivity.class);
+                startActivityForResult(intent, CODE_SETTINGS);
+                break;
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if ((data == null) || (resultCode == RESULT_CANCELED)) { return; }
+        switch (requestCode) {
+            case CODE_SIGN:
+                sendSignatures();
+                break;
+            case CODE_TEXT:
+                petitionText = data.getStringExtra(KEY_TEXT);
+                break;
+            case CODE_SETTINGS:
+                selectedColor = data.getIntExtra(KEY_COLOR, Color.BLACK);
+                selectedColorIndex = data.getIntExtra(KEY_COLOR_INDEX, 0);
+                selectedThickness = data.getIntExtra(KEY_THICKNESS, 1);
+                selectedThicknessIndex = data.getIntExtra(KEY_THICKNESS_INDEX, 0);
+                api_url = data.getStringExtra(KEY_API_URL);
+                department = data.getIntExtra(KEY_DEPARTMENT, PARAMETER_DEPARTMENT);
+                secret_code = data.getStringExtra(KEY_SECRET_CODE);
+                break;
+        }
+    }
+
+    @Override
+    public void onStop(){
+        sp = getPreferences(MODE_PRIVATE);
+        SharedPreferences.Editor ed = sp.edit();
+        ed.putInt(KEY_COLOR, selectedColor);
+        ed.putInt(KEY_COLOR_INDEX, selectedColorIndex);
+        ed.putInt(KEY_THICKNESS, selectedThickness);
+        ed.putInt(KEY_THICKNESS_INDEX, selectedThicknessIndex);
+        ed.putString(KEY_TEXT, petitionText);
+        ed.putString(KEY_API_URL, api_url);
+        ed.putInt(KEY_DEPARTMENT, department);
+        ed.putString(KEY_SECRET_CODE, secret_code);
+        ed.apply();
+        super.onStop();
+    }
+
+    private void loadPreferences() {
+        sp = getPreferences(MODE_PRIVATE);
+        selectedColor = sp.getInt(KEY_COLOR, Color.BLACK);
+        selectedColorIndex = sp.getInt(KEY_COLOR_INDEX, 0);
+        selectedThickness = sp.getInt(KEY_THICKNESS, 1);
+        selectedThicknessIndex = sp.getInt(KEY_THICKNESS_INDEX, 0);
+        petitionText = sp.getString(KEY_TEXT, "");
+        api_url = sp.getString(KEY_API_URL, ROOT_URL);
+        department = sp.getInt(KEY_DEPARTMENT, PARAMETER_DEPARTMENT);
+        secret_code = sp.getString(KEY_SECRET_CODE, TOKEN_REQUEST_CODE);
+    }
+
+    private void getToken() {
+        Call<AccessToken> call = ApiFactory.getService().getToken(secret_code);
+        Log.d("myLogs", call.request().toString());
+        call.enqueue(new Callback<AccessToken>() {
+            @Override
+            public void onResponse(Call<AccessToken> call, Response<AccessToken> response) {
+                if (response.isSuccessful()) {
+                    token = response.body().getAccessToken();
+                    Log.d("myLogs","Полученный токен: " + token);
+                } else Toast.makeText(MainActivity.this, ErrorUtils.errorMessage(response), Toast.LENGTH_LONG).show();
+            }
+
+            @Override
+            public void onFailure(Call<AccessToken> call, Throwable t) {
+                Toast.makeText(MainActivity.this, t.toString(), Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private void sendSignatures(){
+        RequestBody description = RequestBody.create(okhttp3.MultipartBody.FORM, getString(R.string.str_file_description));
+
+        File file2 = getFileStreamPath(SIGNATURE2_PATH);
+        RequestBody requestFile2 = RequestBody.create(MediaType.parse("image/png"), file2);
+        MultipartBody.Part body2 = MultipartBody.Part.createFormData("sign1", file2.getName(), requestFile2);
+
+        File file = getFileStreamPath(SIGNATURE_PATH);
+        RequestBody requestFile = RequestBody.create(MediaType.parse("image/png"), file);
+        MultipartBody.Part body = MultipartBody.Part.createFormData("sign2", file.getName(), requestFile);
+
+        Call<String> call = ApiFactory.getService().sendSignature(token, PARAMETER_ID, description, body2, body);
+        Log.d("myLogs", call.request().toString());
+        call.enqueue(new Callback<String>() {
+            @Override
+            public void onResponse(Call<String> call, Response<String> response) {
+                if (response.isSuccessful()) Log.d("myLogs", "Да " + response.body());
+                else Toast.makeText(MainActivity.this, ErrorUtils.errorMessage(response), Toast.LENGTH_LONG).show();
+            }
+
+            @Override
+            public void onFailure(Call<String> call, Throwable t) {
+                Toast.makeText(MainActivity.this, t.toString(), Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+}

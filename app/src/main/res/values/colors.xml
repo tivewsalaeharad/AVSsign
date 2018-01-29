@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorBlack">#080603</color>
+    <color name="colorTurbo">#fac627</color>
+    <color name="colorDoveGrey">#727271</color>
+    <color name="colorReefGold">#a98a27</color>
+    <color name="colorSilver">#c3c3c2</color>
+    <color name="colorCocoaBrown">#31260f</color>
+</resources>
