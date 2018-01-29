@@ -11,13 +11,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.Toast;
 
+import com.example.circulardialog.CDialog;
+import com.example.circulardialog.extras.CDConstants;
 import com.hand.avssign.R;
 import com.hand.avssign.api.ApiFactory;
-import com.hand.avssign.api.ApiService;
 import com.hand.avssign.api.ErrorUtils;
-import com.hand.avssign.api.ServiceGenerator;
 import com.hand.avssign.model.AccessToken;
 import com.hand.avssign.model.SignatureItself;
 
@@ -126,6 +125,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 api_url = data.getStringExtra(KEY_API_URL);
                 department = data.getIntExtra(KEY_DEPARTMENT, PARAMETER_DEPARTMENT);
                 secret_code = data.getStringExtra(KEY_SECRET_CODE);
+                getToken();
                 break;
         }
     }
@@ -167,13 +167,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (response.isSuccessful()) {
                     token = response.body().getAccessToken();
                     Log.d("myLogs","Полученный токен: " + token);
-                } else Toast.makeText(MainActivity.this, ErrorUtils.errorMessage(response), Toast.LENGTH_LONG).show();
+                } else circle(ErrorUtils.errorMessage(response));
             }
 
             @Override
-            public void onFailure(Call<AccessToken> call, Throwable t) {
-                Toast.makeText(MainActivity.this, t.toString(), Toast.LENGTH_LONG).show();
-            }
+            public void onFailure(Call<AccessToken> call, Throwable t) {circle(t.toString()); }
         });
     }
 
@@ -203,14 +201,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         call.enqueue(new Callback<SignatureItself>() {
             @Override
             public void onResponse(Call<SignatureItself> call, Response<SignatureItself> response) {
-                if (response.isSuccessful()) Log.d("myLogs", "Результат запроса " + response.body().getResult());
-                else Toast.makeText(MainActivity.this, ErrorUtils.errorMessage(response), Toast.LENGTH_LONG).show();
+                if (response.isSuccessful()) {
+                    new CDialog(MainActivity.this).createAlert("Подписи успешно отправлены на сервер", CDConstants.SUCCESS, CDConstants.LARGE)
+                            .setAnimation(CDConstants.SCALE_FROM_BOTTOM_TO_TOP)
+                            .setDuration(5000)
+                            .setTextSize(CDConstants.NORMAL_TEXT_SIZE)
+                            .show();
+                }
+                else circle(ErrorUtils.errorMessage(response));
             }
 
             @Override
-            public void onFailure(Call<SignatureItself> call, Throwable t) {
-                Toast.makeText(MainActivity.this, t.toString(), Toast.LENGTH_LONG).show();
-            }
+            public void onFailure(Call<SignatureItself> call, Throwable t) { circle(t.toString());  }
         });
+    }
+
+    private void circle(String text) {
+        new CDialog(this).createAlert(text, CDConstants.ERROR, CDConstants.LARGE)
+                .setAnimation(CDConstants.SCALE_FROM_BOTTOM_TO_TOP)
+                .setDuration(5000)
+                .setTextSize(CDConstants.NORMAL_TEXT_SIZE)
+                .show();
     }
 }

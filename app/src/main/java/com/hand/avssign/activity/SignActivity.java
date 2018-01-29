@@ -12,10 +12,10 @@ import android.widget.Button;
 import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import com.example.circulardialog.CDialog;
+import com.example.circulardialog.extras.CDConstants;
 import com.hand.avssign.R;
-import com.hand.avssign.api.APIError;
 import com.hand.avssign.api.ApiFactory;
 import com.hand.avssign.api.ErrorUtils;
 import com.hand.avssign.model.DocumentForSignature;
@@ -157,20 +157,12 @@ public class SignActivity extends AppCompatActivity implements View.OnClickListe
                             putTextToGrid(String.valueOf(w.getPrice()),rowCount + 1,5);
                             putTextToGrid(String.valueOf(w.getSum()),rowCount + 1,6);
                         }
-                    } catch (Exception e) {
-                        Toast.makeText(SignActivity.this, "В полученных параметрах имеется ошибка", Toast.LENGTH_LONG).show();
-                    }
-                } else {
-                    Toast.makeText(SignActivity.this, ErrorUtils.errorMessage(response), Toast.LENGTH_LONG).show();
-                    btnOK.setEnabled(false);
-                }
+                    } catch (Exception e) { circle("В полученных параметрах имеется ошибка"); }
+                } else { circle(ErrorUtils.errorMessage(response)); }
             }
 
             @Override
-            public void onFailure(Call<DocumentForSignature> call, Throwable t) {
-                Toast.makeText(SignActivity.this, t.toString(), Toast.LENGTH_LONG).show();
-                btnOK.setEnabled(false);
-            }
+            public void onFailure(Call<DocumentForSignature> call, Throwable t) { circle(t.toString()); }
         });
     }
 
@@ -184,5 +176,13 @@ public class SignActivity extends AppCompatActivity implements View.OnClickListe
         txt_new.setText(txt);
         txt_new.setLayoutParams(textParams);
         grid.addView(txt_new);
+    }
+
+    private void circle(String text) {
+        new CDialog(this).createAlert(text, CDConstants.ERROR, CDConstants.LARGE)
+                .setAnimation(CDConstants.SCALE_FROM_BOTTOM_TO_TOP)
+                .setDuration(5000)
+                .setTextSize(CDConstants.NORMAL_TEXT_SIZE)
+                .show();
     }
 }

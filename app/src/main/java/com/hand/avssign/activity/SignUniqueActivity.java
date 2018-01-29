@@ -1,8 +1,6 @@
 package com.hand.avssign.activity;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -10,10 +8,10 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.GridLayout;
-import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import com.example.circulardialog.CDialog;
+import com.example.circulardialog.extras.CDConstants;
 import com.hand.avssign.R;
 import com.hand.avssign.api.ApiFactory;
 import com.hand.avssign.api.ErrorUtils;
@@ -22,7 +20,6 @@ import com.hand.avssign.model.Passport;
 import com.hand.avssign.model.Weighing;
 import com.hand.avssign.view.SignatureView;
 
-import java.io.FileNotFoundException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -104,20 +101,12 @@ public class SignUniqueActivity extends AppCompatActivity implements View.OnClic
                             putTextToGrid(String.valueOf(w.getPrice()),rowCount + 1,5);
                             putTextToGrid(String.valueOf(w.getSum()),rowCount + 1,6);
                         }
-                    } catch (Exception e) {
-                        Toast.makeText(SignUniqueActivity.this, "В полученных параметрах имеется ошибка", Toast.LENGTH_LONG).show();
-                    }
-                } else {
-                    Toast.makeText(SignUniqueActivity.this, ErrorUtils.errorMessage(response), Toast.LENGTH_LONG).show();
-                    btnOK.setEnabled(false);
-                }
+                    } catch (Exception e) { circle("В полученных параметрах имеется ошибка");  }
+                } else { circle(ErrorUtils.errorMessage(response)); }
             }
 
             @Override
-            public void onFailure(Call<DocumentForSignature> call, Throwable t) {
-                Toast.makeText(SignUniqueActivity.this, t.toString(), Toast.LENGTH_LONG).show();
-                btnOK.setEnabled(false);
-            }
+            public void onFailure(Call<DocumentForSignature> call, Throwable t) { circle(t.toString()); }
         });
     }
 
@@ -131,5 +120,13 @@ public class SignUniqueActivity extends AppCompatActivity implements View.OnClic
         txt_new.setText(txt);
         txt_new.setLayoutParams(textParams);
         grid.addView(txt_new);
+    }
+
+    private void circle(String text) {
+        new CDialog(this).createAlert(text, CDConstants.ERROR, CDConstants.LARGE)
+                .setAnimation(CDConstants.SCALE_FROM_BOTTOM_TO_TOP)
+                .setDuration(5000)
+                .setTextSize(CDConstants.NORMAL_TEXT_SIZE)
+                .show();
     }
 }
