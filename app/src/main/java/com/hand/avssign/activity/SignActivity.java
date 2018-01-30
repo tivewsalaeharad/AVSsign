@@ -95,7 +95,7 @@ public class SignActivity extends AppCompatActivity implements View.OnClickListe
 
     private void load() {
         try {
-            File parentDir = new File(MainActivity.IMAGE_DIR);
+            File parentDir = new File(MainActivity.imageDir());
             if (parentDir.exists() && parentDir.isDirectory()) Log.d("myLogs", "Exist and directory");
             else return;
             File file = new File(parentDir, MainActivity.SIGNATURE_PATH);
@@ -114,7 +114,7 @@ public class SignActivity extends AppCompatActivity implements View.OnClickListe
 
     private void load2() {
         try {
-            File parentDir = new File(MainActivity.IMAGE_DIR);
+            File parentDir = new File(MainActivity.imageDir());
             if (parentDir.exists() && parentDir.isDirectory()) Log.d("myLogs", "Exist and directory");
             else return;
             File file = new File(parentDir, MainActivity.SIGNATURE2_PATH);

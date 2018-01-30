@@ -20,6 +20,7 @@ import com.hand.avssign.api.ApiFactory;
 import com.hand.avssign.api.ErrorUtils;
 import com.hand.avssign.model.AccessToken;
 import com.hand.avssign.model.SignatureItself;
+import com.hand.avssign.utils.FileUtils;
 
 import java.io.File;
 
@@ -46,8 +47,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public static final int CODE_SETTINGS = 3;
 
     private static final int READ_STORAGE_REQUEST = 3124;
-    public static final String PICTURES = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString();
-    public static final String IMAGE_DIR = PICTURES + "/Signatures";
     public static final String SIGNATURE_PATH = "signature.jpg";
     public static final String SIGNATURE2_PATH = "signature2.jpg";
 
@@ -85,9 +84,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Intent intent;
         switch (view.getId()) {
             case R.id.btn_sign:
-                //intent = new Intent(this, SignUniqueActivity.class);
-				//Для открытия экрана с отдельным введением подписей вместо предыдущей строки написать:
-				intent = new Intent(this, SignActivity.class);
+                intent = new Intent(this, SignUniqueActivity.class);
                 startActivityForResult(intent, CODE_SIGN);
                 break;
             case R.id.btn_text:
@@ -183,7 +180,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void sendSignatures(){
         RequestBody description = RequestBody.create(okhttp3.MultipartBody.FORM, getString(R.string.str_file_description));
-        File parentDir = new File(IMAGE_DIR);
+        File parentDir = new File(imageDir());
         if (parentDir.exists() && parentDir.isDirectory()) Log.d("myLogs", "Exist and directory");
         else return;
         File file2 = new File(parentDir, SIGNATURE2_PATH);
@@ -228,5 +225,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .setDuration(5000)
                 .setTextSize(CDConstants.NORMAL_TEXT_SIZE)
                 .show();
+    }
+
+    public static String imageDir() {
+        return FileUtils.picturesDirStr() + "/Signatures";
     }
 }

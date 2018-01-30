@@ -52,7 +52,7 @@ public class SignatureView extends View {
             Log.d("myLogs", FileUtils.strSDCardUnavailable());
             return;
         }
-        File parentDir = new File(MainActivity.IMAGE_DIR);
+        File parentDir = new File(MainActivity.imageDir());
         parentDir.mkdirs();
         File signatureFile = new File(parentDir, path);
 
