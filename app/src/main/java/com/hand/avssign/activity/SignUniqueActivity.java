@@ -3,7 +3,6 @@ package com.hand.avssign.activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
@@ -15,6 +14,7 @@ import com.example.circulardialog.extras.CDConstants;
 import com.hand.avssign.R;
 import com.hand.avssign.api.ApiFactory;
 import com.hand.avssign.api.ErrorUtils;
+import com.hand.avssign.model.AccessToken;
 import com.hand.avssign.model.DocumentForSignature;
 import com.hand.avssign.model.Passport;
 import com.hand.avssign.model.Weighing;
@@ -48,7 +48,7 @@ public class SignUniqueActivity extends AppCompatActivity implements View.OnClic
         signature = findViewById(R.id.signature);
         txtDate = findViewById(R.id.txt_date);
         btnOK = findViewById(R.id.btn_ok);
-        getDocument();
+        getTokenAndDocumnent();
         Date date = new Date();
         SimpleDateFormat sdf = new SimpleDateFormat(FORMAT_DATE, Locale.getDefault());
         txtDate.setText(sdf.format(date));
@@ -82,9 +82,30 @@ public class SignUniqueActivity extends AppCompatActivity implements View.OnClic
         }
     }
 
+    private void getToken() {
+        Call<AccessToken> call = ApiFactory.getService().getToken(MainActivity.secret_code);
+        call.enqueue(new Callback<AccessToken>() {
+            @Override
+            public void onResponse(Call<AccessToken> call, Response<AccessToken> response) {
+                if (response.isSuccessful()) {
+                    MainActivity.token = response.body().getAccessToken();
+                    MainActivity.tokenAcquired = true;
+                    getDocument();
+                } else {
+                    circle(ErrorUtils.errorMessage(response));
+                    MainActivity.token = "";
+                    MainActivity.tokenAcquired = false;
+                }
+            }
+
+            @Override
+            public void onFailure(Call<AccessToken> call, Throwable t) {circle(t.toString()); }
+        });
+    }
+
+
     private void getDocument() {
         Call<DocumentForSignature> call = ApiFactory.getService().getDocument(MainActivity.token, MainActivity.department);
-        Log.d("myLogs", call.request().toString());
         call.enqueue(new Callback<DocumentForSignature>() {
             @Override
             public void onResponse(Call<DocumentForSignature> call, Response<DocumentForSignature> response) {
@@ -110,12 +131,18 @@ public class SignUniqueActivity extends AppCompatActivity implements View.OnClic
                             putTextToGrid(String.valueOf(w.getSum()),rowCount + 1,6);
                         }
                     } catch (Exception e) { circle("В полученных параметрах имеется ошибка");  }
-                } else { circle(ErrorUtils.errorMessage(response)); }
+                } else if (response.code() == 400) getToken();
+                else circle(ErrorUtils.errorMessage(response));
             }
 
             @Override
             public void onFailure(Call<DocumentForSignature> call, Throwable t) { circle(t.toString()); }
         });
+    }
+
+    private void getTokenAndDocumnent() {
+        if (!MainActivity.tokenAcquired) getToken();
+        else getDocument();
     }
 
     private void putTextToGrid(String txt, int row, int col)

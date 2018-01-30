@@ -4,14 +4,11 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
-import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 
 import com.example.circulardialog.CDialog;
 import com.example.circulardialog.extras.CDConstants;
@@ -41,7 +38,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public static final String KEY_DEPARTMENT = "Department";
     public static final String KEY_SECRET_CODE = "Secret code";
     public static final String KEY_TEXT = "Text";
-    public static final String KEY_FILE = "File";
     public static final int CODE_SIGN = 1;
     public static final int CODE_TEXT = 2;
     public static final int CODE_SETTINGS = 3;
@@ -66,16 +62,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public static String token;
 
     private SharedPreferences sp;
+    public static Boolean tokenAcquired;
 
-    Button btnSign;
+    //Button btnSign;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        btnSign = findViewById(R.id.btn_sign);
+        //btnSign = findViewById(R.id.btn_sign);
         loadPreferences();
-        getToken();
+        token = "";
+        tokenAcquired = false;
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, READ_STORAGE_REQUEST);
     }
 
@@ -100,10 +98,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        /**
-         *  You can handle request permission result of READ_EXTERNAL_STORAGE if needed
-         *  @param READ_STORAGE_REQUEST its request code at top of this class
-         */
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
@@ -119,7 +113,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 petitionText = data.getStringExtra(KEY_TEXT);
                 break;
             case CODE_SETTINGS:
-                btnSign.setEnabled(false);
+                //btnSign.setEnabled(false);
                 selectedColor = data.getIntExtra(KEY_COLOR, Color.BLACK);
                 selectedColorIndex = data.getIntExtra(KEY_COLOR_INDEX, 0);
                 selectedThickness = data.getIntExtra(KEY_THICKNESS, 1);
@@ -127,7 +121,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 api_url = data.getStringExtra(KEY_API_URL);
                 department = data.getIntExtra(KEY_DEPARTMENT, PARAMETER_DEPARTMENT);
                 secret_code = data.getStringExtra(KEY_SECRET_CODE);
-                getToken();
+                token = "";
+                tokenAcquired = false;
+                //getToken();
                 break;
         }
     }
@@ -160,39 +156,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         secret_code = sp.getString(KEY_SECRET_CODE, TOKEN_REQUEST_CODE);
     }
 
-    private void getToken() {
-        Call<AccessToken> call = ApiFactory.getService().getToken(secret_code);
-        Log.d("myLogs", call.request().toString());
-        call.enqueue(new Callback<AccessToken>() {
-            @Override
-            public void onResponse(Call<AccessToken> call, Response<AccessToken> response) {
-                if (response.isSuccessful()) {
-                    token = response.body().getAccessToken();
-                    Log.d("myLogs","Полученный токен: " + token);
-                    btnSign.setEnabled(true);
-                } else circle(ErrorUtils.errorMessage(response));
-            }
-
-            @Override
-            public void onFailure(Call<AccessToken> call, Throwable t) {circle(t.toString()); }
-        });
-    }
-
     private void sendSignatures(){
         RequestBody description = RequestBody.create(okhttp3.MultipartBody.FORM, getString(R.string.str_file_description));
         File parentDir = new File(imageDir());
-        if (parentDir.exists() && parentDir.isDirectory()) Log.d("myLogs", "Exist and directory");
-        else return;
+        if (!parentDir.exists() || !parentDir.isDirectory()) return;
         File file2 = new File(parentDir, SIGNATURE2_PATH);
-        if (!file2.exists()) {
-            Log.d("myLogs", SIGNATURE2_PATH +" not exist");
-            return;
-        }
+        if (!file2.exists()) return;
         File file = new File(parentDir, SIGNATURE_PATH);
-        if (!file.exists()) {
-            Log.d("myLogs", SIGNATURE_PATH + " not exist");
-            return;
-        }
+        if (!file.exists()) return;
         RequestBody requestFile2 = RequestBody.create(MediaType.parse("image/jpeg"), file2);
         MultipartBody.Part body2 = MultipartBody.Part.createFormData("sign1", file2.getName(), requestFile2);
 
@@ -200,7 +171,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         MultipartBody.Part body = MultipartBody.Part.createFormData("sign2", file.getName(), requestFile);
 
         Call<SignatureItself> call = ApiFactory.getService().sendSignature(token, PARAMETER_ID, description, body2, body);
-        Log.d("myLogs", call.request().toString());
         call.enqueue(new Callback<SignatureItself>() {
             @Override
             public void onResponse(Call<SignatureItself> call, Response<SignatureItself> response) {
@@ -210,12 +180,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             .setDuration(5000)
                             .setTextSize(CDConstants.NORMAL_TEXT_SIZE)
                             .show();
-                }
+                } else if (response.code() == 400) getTokenForSignature();
                 else circle(ErrorUtils.errorMessage(response));
             }
 
             @Override
             public void onFailure(Call<SignatureItself> call, Throwable t) { circle(t.toString());  }
+        });
+    }
+
+    private void getTokenForSignature() {
+        Call<AccessToken> call = ApiFactory.getService().getToken(MainActivity.secret_code);
+        call.enqueue(new Callback<AccessToken>() {
+            @Override
+            public void onResponse(Call<AccessToken> call, Response<AccessToken> response) {
+                if (response.isSuccessful()) {
+                    MainActivity.token = response.body().getAccessToken();
+                    MainActivity.tokenAcquired = true;
+                    sendSignatures();
+                } else {
+                    circle(ErrorUtils.errorMessage(response));
+                    MainActivity.token = "";
+                    MainActivity.tokenAcquired = false;
+                }
+            }
+
+            @Override
+            public void onFailure(Call<AccessToken> call, Throwable t) {circle(t.toString()); }
         });
     }
 
