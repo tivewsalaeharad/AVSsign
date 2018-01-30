@@ -17,8 +17,8 @@ import java.util.Arrays;
 
 public class SettingsActivity extends AppCompatActivity implements View.OnClickListener {
 
-    Integer[] colors = {0xff000000, 0xff101010, 0xff202020, 0xff303030, 0xff404040, 0xff505050, 0xff606060, 0xff707070, 0xff808080};
     Integer[] thicknesses = {1, 2, 4, 7, 10, 14, 17, 21, 25};
+    Integer[] colors = {0xff000005, 0xff041e95, 0xff2b1b73, 0xff007129, 0xff950000, 0xfffc2700};
     public static Integer selectedColor;
     private static int selectedColorIndex;
     private static Integer selectedThickness;

@@ -11,6 +11,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 
 import com.example.circulardialog.CDialog;
 import com.example.circulardialog.extras.CDConstants;
@@ -67,10 +68,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private SharedPreferences sp;
 
+    Button btnSign;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        btnSign = findViewById(R.id.btn_sign);
         loadPreferences();
         getToken();
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, READ_STORAGE_REQUEST);
@@ -81,9 +85,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Intent intent;
         switch (view.getId()) {
             case R.id.btn_sign:
-                intent = new Intent(this, SignUniqueActivity.class);
+                //intent = new Intent(this, SignUniqueActivity.class);
 				//Для открытия экрана с отдельным введением подписей вместо предыдущей строки написать:
-				//intent = new Intent(this, SignActivity.class);
+				intent = new Intent(this, SignActivity.class);
                 startActivityForResult(intent, CODE_SIGN);
                 break;
             case R.id.btn_text:
@@ -118,6 +122,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 petitionText = data.getStringExtra(KEY_TEXT);
                 break;
             case CODE_SETTINGS:
+                btnSign.setEnabled(false);
                 selectedColor = data.getIntExtra(KEY_COLOR, Color.BLACK);
                 selectedColorIndex = data.getIntExtra(KEY_COLOR_INDEX, 0);
                 selectedThickness = data.getIntExtra(KEY_THICKNESS, 1);
@@ -167,6 +172,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (response.isSuccessful()) {
                     token = response.body().getAccessToken();
                     Log.d("myLogs","Полученный токен: " + token);
+                    btnSign.setEnabled(true);
                 } else circle(ErrorUtils.errorMessage(response));
             }
 

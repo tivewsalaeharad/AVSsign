@@ -22,6 +22,9 @@ public class SignatureView extends View {
     private float x;
     private float y;
     private Bitmap bitmap;
+    private Boolean modified;
+    private Float lastX;
+    private Float lastY;
 
     Paint drawPaint;
     private Path path = new Path();
@@ -29,6 +32,7 @@ public class SignatureView extends View {
     public SignatureView(Context context, AttributeSet attrs) {
         super(context, attrs);
         setBackgroundColor(Color.WHITE);
+        modified = false;
         drawPaint = new Paint(Paint.DITHER_FLAG);
         drawPaint.setAntiAlias(true);
         drawPaint.setColor(MainActivity.selectedColor);
@@ -65,8 +69,11 @@ public class SignatureView extends View {
     public void clear()
     {
         path.reset();
+        modified = false;
         invalidate();
     }
+
+    public Boolean getModified() { return modified; }
 
     @Override
     protected void onDraw(Canvas canvas) {
@@ -81,9 +88,12 @@ public class SignatureView extends View {
         switch (event.getAction()){
             case MotionEvent.ACTION_DOWN:
                 path.moveTo(x, y);
+                lastX = x;
+                lastY = y;
                 return true;
             case MotionEvent.ACTION_MOVE:
                 path.lineTo(x, y);
+                if ((Math.abs(x - lastX) >= 1) ||  (Math.abs(y - lastY) >= 1)) modified = true;
                 break;
             default:
                 return false;

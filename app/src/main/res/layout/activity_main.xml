@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="com.hand.avssign.MainActivity">
+    tools:context="com.hand.avssign.activity.MainActivity">
 
     <Button
         android:id="@+id/btn_sign"
@@ -23,7 +23,8 @@
         android:text="@string/str_sign"
         android:textAllCaps="false"
         android:textColor="@color/colorCocoaBrown"
-        android:textSize="30sp" />
+        android:textSize="30sp"
+        android:enabled="false"/>
 
     <Button
         android:id="@+id/btn_text"

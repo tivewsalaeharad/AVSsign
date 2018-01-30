@@ -63,6 +63,14 @@ public class SignUniqueActivity extends AppCompatActivity implements View.OnClic
                 signature2.clear();
                 break;
             case R.id.btn_ok:
+                if (!signature2.getModified() || !signature.getModified()) {
+                    new CDialog(this).createAlert("Пожалуйста, поставьте все подписи", CDConstants.WARNING, CDConstants.LARGE)
+                            .setAnimation(CDConstants.SCALE_FROM_BOTTOM_TO_TOP)
+                            .setDuration(5000)
+                            .setTextSize(CDConstants.NORMAL_TEXT_SIZE)
+                            .show();
+                    return;
+                }
                 signature.save(MainActivity.SIGNATURE_PATH);
                 signature2.save(MainActivity.SIGNATURE2_PATH);
                 setResult(RESULT_OK, intent);
@@ -93,7 +101,7 @@ public class SignUniqueActivity extends AppCompatActivity implements View.OnClic
 
                         for (Weighing w : d.getWeighings()) {
                             int rowCount = grid.getRowCount();
-                            putTextToGrid(String.valueOf(w.getId()), rowCount + 1, 0);
+                            putTextToGrid(w.getMetal().getTitle(), rowCount + 1, 0);
                             putTextToGrid(String.valueOf(w.getBrutto()),rowCount + 1,1);
                             putTextToGrid(String.valueOf(w.getTare()),rowCount + 1,2);
                             putTextToGrid(String.valueOf(w.getSor())+"%",rowCount + 1,3);

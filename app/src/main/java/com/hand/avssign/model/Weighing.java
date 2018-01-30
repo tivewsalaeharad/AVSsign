@@ -1,4 +1,5 @@
 package com.hand.avssign.model;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
@@ -19,6 +20,9 @@ public class Weighing {
     @SerializedName("price")
     @Expose
     private int price;
+    @SerializedName("metal")
+    @Expose
+    private Metal metal;
     @SerializedName("netto")
     @Expose
     private int netto;
@@ -64,6 +68,14 @@ public class Weighing {
 
     public void setPrice(int price) {
         this.price = price;
+    }
+
+    public Metal getMetal() {
+        return metal;
+    }
+
+    public void setMetal(Metal metal) {
+        this.metal = metal;
     }
 
     public int getNetto() {

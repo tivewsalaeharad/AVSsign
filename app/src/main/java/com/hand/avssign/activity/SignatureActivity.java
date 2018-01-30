@@ -5,6 +5,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 
+import com.example.circulardialog.CDialog;
+import com.example.circulardialog.extras.CDConstants;
 import com.hand.avssign.R;
 import com.hand.avssign.view.SignatureView;
 
@@ -30,6 +32,14 @@ public class SignatureActivity extends AppCompatActivity implements View.OnClick
                 signatureView.clear();
                 break;
             case R.id.btn_ok:
+                if (!signatureView.getModified()) {
+                    new CDialog(this).createAlert("Пожалуйста, поставьте подпись", CDConstants.WARNING, CDConstants.LARGE)
+                            .setAnimation(CDConstants.SCALE_FROM_BOTTOM_TO_TOP)
+                            .setDuration(5000)
+                            .setTextSize(CDConstants.NORMAL_TEXT_SIZE)
+                            .show();
+                    return;
+                }
                 signatureView.save(path);
                 setResult(RESULT_OK, intent);
                 finish();

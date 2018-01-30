@@ -149,7 +149,7 @@ public class SignActivity extends AppCompatActivity implements View.OnClickListe
 
                         for (Weighing w : d.getWeighings()) {
                             int rowCount = grid.getRowCount();
-                            putTextToGrid(String.valueOf(w.getId()), rowCount + 1, 0);
+                            putTextToGrid(w.getMetal().getTitle(), rowCount + 1, 0);
                             putTextToGrid(String.valueOf(w.getBrutto()),rowCount + 1,1);
                             putTextToGrid(String.valueOf(w.getTare()),rowCount + 1,2);
                             putTextToGrid(String.valueOf(w.getSor()) + "%",rowCount + 1,3);
