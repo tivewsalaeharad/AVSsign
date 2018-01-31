@@ -20,6 +20,8 @@ import com.hand.avssign.model.SignatureItself;
 import com.hand.avssign.utils.FileUtils;
 
 import java.io.File;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -82,7 +84,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Intent intent;
         switch (view.getId()) {
             case R.id.btn_sign:
-                intent = new Intent(this, SignUniqueActivity.class);
+                intent = new Intent(this, SignActivity.class);
                 startActivityForResult(intent, CODE_SIGN);
                 break;
             case R.id.btn_text:
@@ -190,7 +192,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void getTokenForSignature() {
-        Call<AccessToken> call = ApiFactory.getService().getToken(MainActivity.secret_code);
+        Call<AccessToken> call = ApiFactory.getService().getToken(md5());
         call.enqueue(new Callback<AccessToken>() {
             @Override
             public void onResponse(Call<AccessToken> call, Response<AccessToken> response) {
@@ -220,5 +222,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     public static String imageDir() {
         return FileUtils.picturesDirStr() + "/Signatures";
+    }
+
+    public static String md5() {
+        final String MD5 = "MD5";
+        try {
+            MessageDigest digest = java.security.MessageDigest.getInstance(MD5);
+            digest.update(secret_code.getBytes());
+            byte messageDigest[] = digest.digest();
+            StringBuilder hexString = new StringBuilder();
+            for (byte aMessageDigest : messageDigest) {
+                String h = Integer.toHexString(0xFF & aMessageDigest);
+                while (h.length() < 2) h = "0" + h;
+                hexString.append(h);
+            }
+            return hexString.toString();
+        } catch (NoSuchAlgorithmException e) { e.printStackTrace(); }
+        return "";
     }
 }

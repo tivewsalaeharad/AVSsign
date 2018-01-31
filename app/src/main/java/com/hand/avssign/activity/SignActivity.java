@@ -28,7 +28,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class SignUniqueActivity extends AppCompatActivity implements View.OnClickListener {
+public class SignActivity extends AppCompatActivity implements View.OnClickListener {
 
     private static final String FORMAT_DATE = "dd.MM.yyyy";
     TextView txtPetition;
@@ -83,7 +83,7 @@ public class SignUniqueActivity extends AppCompatActivity implements View.OnClic
     }
 
     private void getToken() {
-        Call<AccessToken> call = ApiFactory.getService().getToken(MainActivity.secret_code);
+        Call<AccessToken> call = ApiFactory.getService().getToken(MainActivity.md5());
         call.enqueue(new Callback<AccessToken>() {
             @Override
             public void onResponse(Call<AccessToken> call, Response<AccessToken> response) {

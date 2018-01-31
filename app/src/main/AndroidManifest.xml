@@ -31,12 +31,6 @@
         <activity
             android:name=".activity.SignActivity"
             android:screenOrientation="portrait"/>
-        <activity
-            android:name=".activity.SignUniqueActivity"
-            android:screenOrientation="portrait"/>
-        <activity
-            android:name=".activity.SignatureActivity"
-            android:screenOrientation="portrait"/>
     </application>
 
 </manifest>
