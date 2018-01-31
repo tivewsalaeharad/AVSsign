@@ -49,7 +49,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public static final String SIGNATURE2_PATH = "signature2.jpg";
 
     public static final String ROOT_URL = "http://app.avs.com.ru/psa/";
-    public static final String TOKEN_REQUEST_CODE = "202cb962ac59075b964b07152d234b70";
+    public static final String TOKEN_REQUEST_CODE = "";
     public static final int PARAMETER_DEPARTMENT = 5;
     public static final String PARAMETER_ID = "45";
 
