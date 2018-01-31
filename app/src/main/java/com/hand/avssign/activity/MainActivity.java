@@ -51,7 +51,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public static final String ROOT_URL = "http://app.avs.com.ru/psa/";
     public static final String TOKEN_REQUEST_CODE = "";
     public static final int PARAMETER_DEPARTMENT = 5;
-    public static final String PARAMETER_ID = "45";
 
     public static Integer selectedColor;
     public static int selectedColorIndex;
@@ -62,6 +61,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public static String secret_code;
     public static String petitionText;
     public static String token;
+    public static String id;
 
     private SharedPreferences sp;
     public static Boolean tokenAcquired;
@@ -172,7 +172,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         RequestBody requestFile = RequestBody.create(MediaType.parse("image/jpeg"), file);
         MultipartBody.Part body = MultipartBody.Part.createFormData("sign2", file.getName(), requestFile);
 
-        Call<SignatureItself> call = ApiFactory.getService().sendSignature(token, PARAMETER_ID, description, body2, body);
+        Call<SignatureItself> call = ApiFactory.getService().sendSignature(token, id, description, body2, body);
         call.enqueue(new Callback<SignatureItself>() {
             @Override
             public void onResponse(Call<SignatureItself> call, Response<SignatureItself> response) {
